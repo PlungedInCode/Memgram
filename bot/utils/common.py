@@ -19,6 +19,7 @@ LOGS_DIR = os.path.join(CONFIG_DIR, 'logs')
 SETTINGS_PATH = os.path.join(SETTINGS_DIR, 'settings.yaml')
 DB_PATH = os.path.join(DB_DIR, 'memgram.db')
 LOGS_PATH = os.path.join(LOGS_DIR, 'memgram.log')
+ADMINS_PATH = os.path.join(os.path.dirname(BOT_PATH), 'config/admins.json')
 
 
 INVALID_MIME_TYPES = [

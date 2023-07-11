@@ -1,30 +1,23 @@
 import re
 import string
+import json
 
 import utils.orm as orm
 from numpy import dot
 from numpy.linalg import norm
 from pandas import DataFrame
-# from ruamel.yaml import YAML
 from sklearn.feature_extraction.text import TfidfVectorizer
-from utils.common import SETTINGS_PATH # settings
+from utils.common import SETTINGS_PATH, ADMINS_PATH # settings
 
 SENSITIVITY = 0.3
 
-def initialized():
-#     # return settings['bot_name'] and settings['admin_usernames'] and settings['channel_id']
-    return True
-# # def initialized(bot_name, admin_usernames, channel_id):
-# #     return bool(bot_name and admin_usernames and channel_id)
+def load_admins_from_json(filename):
+    with open(filename, 'r') as file:
+        admins = json.load(file)
+    return admins
 
 def is_admin(username):
-    return True
-
-# # def store_settings(field, value):
-# #     settings[field] = value
-# #     with open(SETTINGS_PATH, 'w') as f:
-# #         yaml.dump(settings, f)
-
+    return username in load_admins_from_json(ADMINS_PATH)
 
 def cleaner(query):
     document_test = query.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u') \
@@ -32,26 +25,28 @@ def cleaner(query):
         replace('4', 'four').replace('5', 'five').replace('6', 'six').replace('7', 'seven').replace('8', 'eight'). \
         replace('9', 'nine').replace('0', 'zero')
     # Remove Unicode
-    document_test = re.sub(r'[^\x00-\x7F]+', ' ', document_test)
-    # Remove Mentions
+    # document_test = re.sub(r'[^\x00-\x7F]+', ' ', document_test)
+    # # Remove Mentions
     document_test = re.sub(r'@\w+', '', document_test)
-    # Lowercase the document
-    document_test = document_test.lower()
-    # Remove punctuations
+    # # Lowercase the document
+    document_test = document_test.lower()   
+    # # Remove punctuations
     document_test = re.sub(r'[%s]' % re.escape(string.punctuation), ' ', document_test)
-    # Lowercase the numbers
+    # # Lowercase the numbers
     document_test = re.sub(r'[0-9]', '', document_test)
-    # Remove the doubled space
+    # # Remove the doubled space
     return re.sub(r'\s{2,}', ' ', document_test)
+    # return query
 
-# def clean_documents(documents):
-#     documents_clean = []
-#     for key, value in documents.items():
-#         cleaned = cleaner(value)
-#         documents[key] = cleaned
-#         documents_clean.append(cleaned)
 
-#     return documents_clean
+def clean_documents(documents):
+    documents_clean = []
+    for key, value in documents.items():
+        cleaned = cleaner(value)
+        documents[key] = cleaned
+        documents_clean.append(cleaned)
+
+    return documents_clean
 
 
 def create_df(documents):
@@ -61,26 +56,25 @@ def create_df(documents):
     return DataFrame(x, index=vt.get_feature_names_out()), vt
 
 
-# def get_similar_videos(q, df, vt, n_videos, sensitivity=SENSITIVITY):
-#     if n_videos:
-#         q = [q]
-#         result = []
-#         q_vec = vt.transform(q).toarray().reshape(df.shape[0], )
-#         sim = {}  # Calculate the similarity
+def get_similar_videos(q, df, vt, n_videos, sensitivity=0.3):
+    if n_videos:
+        q = [q]
+        result = []
+        q_vec = vt.transform(q).toarray().reshape(df.shape[0], )
+        sim = {}  # Calculate the similarity
 
-#         for i in range(n_videos):
-#             try:
-#                 sim[i] = dot(df.loc[:, i].values, q_vec) / norm(df.loc[:, i]) * norm(q_vec)
-#             except ZeroDivisionError:
-#                 pass
+        for i in range(n_videos):
+            try:
+                sim[i] = dot(df.loc[:, i].values, q_vec) / norm(df.loc[:, i]) * norm(q_vec)
+            except ZeroDivisionError:
+                pass
 
-#         # Sort the values
-#         sim_sorted = sorted(sim.items(), key=lambda x: x[1], reverse=True)
-#         for k, v in sim_sorted:
-#             if v > sensitivity:
-#                 result.append(k)
-#         return result
-
+        # Sort the values
+        sim_sorted = sorted(sim.items(), key=lambda x: x[1], reverse=True)
+        for k, v in sim_sorted:
+            if v > sensitivity:
+                result.append(k)
+        return result
 
 
 class VideosInfo:

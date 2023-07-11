@@ -1,3 +1,4 @@
+# TODO recursion call if there's an error
 import logging
 from uuid import uuid4
 
@@ -14,11 +15,11 @@ from data.messages import *
 import utils.utils as utils
 import utils.orm as orm
 
-# # Enable logging
-# logging.basicConfig(
-#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-# )
-# logger = logging.getLogger(__name__)
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 UPLD_GET_VID, UPLD_TITLE, UPLD_DESC, UPLD_KEYWORDS = range(4)
@@ -27,12 +28,12 @@ async def upload_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     # if  not utils.initialized():
     #     await context.bot.send_message(chat_id=update.effective_chat.id, text=INIT_REQUIRED)
     #     return ConversationHandler.END
-    # elif utils.is_admin(update.effective_user.username):
+    if utils.is_admin(update.effective_user.username):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_VIDEO)
         return UPLD_GET_VID
-    # else :
-        # await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_DISABLED)
-        # return ConversationHandler.END
+    else :
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_DISABLED)
+        return ConversationHandler.END
     
 
 async def upload_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -92,7 +93,6 @@ async def upload_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption=VIDEO_INFO_CAPTION.format(context.user_data['upld']['id'],
                         user,context.user_data['upld']['desc'],context.user_data['upld']['keywords']), parse_mode="HTML")
         
-        # await context.bot.send_message(chat_id=update.effective_chat.id, text=VIDEO_SENT)
         try:
             user = orm.Users(
                 user_id=update.effective_user.id,

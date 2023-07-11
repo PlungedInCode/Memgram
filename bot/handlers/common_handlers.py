@@ -2,6 +2,7 @@ import logging
 from random import choice
 
 import utils.orm as orm
+from utils.common import DB_PATH
 from telegram import Update, ReplyKeyboardRemove
 from utils import utils
 # from videogram.utils.common import settings, LOGS_PATH
@@ -78,3 +79,9 @@ async def get_random_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_video(chat_id=update.effective_chat.id, video=random_result.file_id)
     except:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
+
+
+async def get_db(update, context):
+    if utils.is_admin(update.effective_user.username):
+        with open(DB_PATH, 'rb') as db_file:
+            await context.bot.sendDocument(chat_id=update.effective_chat.id, document=db_file)
