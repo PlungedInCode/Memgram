@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from dotenv import load_dotenv
 
 from telegram.ext import CommandHandler, InlineQueryHandler, ChosenInlineResultHandler, Application
@@ -7,7 +7,7 @@ from handlers import common_handlers, search_handlers
 from handlers.delete_handlers import delete_conv_handler
 from handlers.edit_handlers import edit_conv_handler
 from handlers.upload_handlers import upload_conv_handler
-
+from data.consts import TOKEN
 
 # Enable logging
 logging.basicConfig(
@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
 
 def main() -> None:
     try:
@@ -52,7 +51,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    # print(videos_info.videos_info_list)
     main()  
 
 
