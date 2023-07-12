@@ -4,7 +4,7 @@ import utils.orm as orm
 from telegram import InlineQueryResultCachedVideo, Update
 from telegram.ext import ContextTypes
 from utils import utils
-from data.messages import *
+from data.messages_en import *
 
 
 async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):

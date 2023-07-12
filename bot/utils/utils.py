@@ -7,7 +7,7 @@ from numpy import dot
 from numpy.linalg import norm
 from pandas import DataFrame
 from sklearn.feature_extraction.text import TfidfVectorizer
-from utils.common import SETTINGS_PATH, ADMINS_PATH # settings
+from utils.common import  ADMINS_PATH # settings
 
 SENSITIVITY = 0.3
 
@@ -24,19 +24,16 @@ def cleaner(query):
         .replace('ñ', 'n').replace('ü', 'u').replace('1', 'one').replace('2', 'two').replace('3', 'three'). \
         replace('4', 'four').replace('5', 'five').replace('6', 'six').replace('7', 'seven').replace('8', 'eight'). \
         replace('9', 'nine').replace('0', 'zero')
-    # Remove Unicode
-    # document_test = re.sub(r'[^\x00-\x7F]+', ' ', document_test)
-    # # Remove Mentions
+    # Remove Mentions
     document_test = re.sub(r'@\w+', '', document_test)
-    # # Lowercase the document
+    # Lowercase the document
     document_test = document_test.lower()   
-    # # Remove punctuations
+    # Remove punctuations
     document_test = re.sub(r'[%s]' % re.escape(string.punctuation), ' ', document_test)
-    # # Lowercase the numbers
+    # Lowercase the numbers
     document_test = re.sub(r'[0-9]', '', document_test)
-    # # Remove the doubled space
+    # Remove the doubled space
     return re.sub(r'\s{2,}', ' ', document_test)
-    # return query
 
 
 def clean_documents(documents):

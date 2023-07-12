@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 from telegram.ext import CommandHandler, InlineQueryHandler, ChosenInlineResultHandler, Application
@@ -6,16 +7,25 @@ from handlers import common_handlers, search_handlers
 from handlers.delete_handlers import delete_conv_handler
 from handlers.edit_handlers import edit_conv_handler
 from handlers.upload_handlers import upload_conv_handler
-from utils.utils import load_admins_from_json
 
-from utils.utils import videos_info
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+# set higher logging level for httpx to avoid all GET and POST requests being logged
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
+
 
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 
 
-def main():
+
+def main() -> None:
     try:
         application = Application.builder().token(TOKEN).build()
         print('Bot is working')

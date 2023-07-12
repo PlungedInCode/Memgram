@@ -1,33 +1,31 @@
-# TODO recursion call if there's an error
 import logging
 from uuid import uuid4
 
-from telegram import Update, InlineQueryResultCachedVideo
+from telegram import Update
 from telegram.ext import (
-    CommandHandler,
-    ContextTypes,
-    ConversationHandler,
-    MessageHandler,
-    filters,
+    CommandHandler,ContextTypes,
+    ConversationHandler,MessageHandler,filters,
 )
 from handlers.common_handlers import cancel
-from data.messages import *
-import utils.utils as utils
+from data.messages_en import *
+from utils import utils
 import utils.orm as orm
+
 
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
+# set higher logging level for httpx to avoid all GET and POST requests being logged
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 
 UPLD_GET_VID, UPLD_TITLE, UPLD_DESC, UPLD_KEYWORDS = range(4)
 
+
 async def upload_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # if  not utils.initialized():
-    #     await context.bot.send_message(chat_id=update.effective_chat.id, text=INIT_REQUIRED)
-    #     return ConversationHandler.END
     if utils.is_admin(update.effective_user.username):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_VIDEO)
         return UPLD_GET_VID
@@ -36,7 +34,7 @@ async def upload_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         return ConversationHandler.END
     
 
-async def upload_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upload_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.update({
         'upld': {
             'id': str(uuid4()),
@@ -53,37 +51,35 @@ async def upload_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.user_data['upld']['duration'] > MAX_VIDEO_LENGTH:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=MAX_VIDEO_LENGTH_ERROR)
-        return ConversationHandler.END
+        return UPLD_GET_VID
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_TITLE)
         return UPLD_TITLE
 
 
-async def upload_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upload_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if len(update['message']['text']) <= MAX_TITLE_LENGTH:
         context.user_data['upld'].update({'title': update['message']['text']})
         await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_DESCRP)
         return UPLD_DESC
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=MAX_TITLE_LENGTH_ERROR)
-        return ConversationHandler.END
+        return UPLD_TITLE
 
 
-async def upload_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upload_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if len(update['message']['text']) <= MAX_DESCRP_LENGTH:
         context.user_data['upld'].update({'desc': update['message']['text']})
         await context.bot.send_message(chat_id=update.effective_chat.id, text=UPLOAD_KWORDS)
         return UPLD_KEYWORDS
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=MAX_DESCRP_LENGTH)
-        return ConversationHandler.END
+        return UPLD_DESC
 
 
-async def upload_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upload_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if len(update['message']['text']) <= MAX_KWORDS_LENGTH:
         context.user_data['upld'].update({'keywords': update['message']['text']})
-
-        print("We are here")
         if context.user_data['upld']['user_name']:
             user = context.user_data['upld']['user_name']
         else:
@@ -130,6 +126,7 @@ async def upload_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=ERROR_OCCURED)
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=MAX_KWORDS_LENGTH_ERROR)
+        return UPLD_KEYWORDS
 
 
 upload_conv_handler = ConversationHandler(

@@ -6,16 +6,16 @@ from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, fi
 from handlers.common_handlers import cancel
 from utils.utils import is_admin
 from utils import utils
-from data.messages import *
+from data.messages_en import *
 
 EDIT_GET_ID, EDIT_MENU, EDIT_CHOSEN_OPTION, EDIT_TITLE, EDIT_DESC, EDIT_KEYWORDS, EDIT_VIDEO = range(7)
 
 async def edit_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if is_admin(update.effective_chat.username):
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_start")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_START)
         return EDIT_GET_ID
     else:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_disabled")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_DISABLED)
         return ConversationHandler.END
 
 async def edit_get_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -28,7 +28,7 @@ async def edit_get_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             orm.ChannelMessages, isouter=True).join(orm.Users, isouter=True).filter(
             orm.VideoData.id == update['message']['text']).first()
     else:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="need_video_or_id")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=NEED_VID_OR_ID)
         return
     
     if result:
@@ -39,12 +39,12 @@ async def edit_get_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         })
 
     else:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="error_video_not_found")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_VID_NOT_FOUND)
         return ConversationHandler.END
 
     await context.bot.send_video(chat_id=update.effective_chat.id,
                                  video=context.user_data['video'].file_id,
-                                 caption=VIDEO_INFO_CAPTION.format(context.user_data['video'].id,
+                                 caption=VIDEO_EDIT_CAPTION.format(context.user_data['video'].id,
                                                                 html.escape(context.user_data['video'].title),
                                                                 html.escape(context.user_data['video'].description),
                                                                 html.escape(context.user_data['video'].keywords)),
@@ -55,7 +55,7 @@ async def edit_get_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                 [InlineKeyboardButton("description", callback_data='desc'),
                  InlineKeyboardButton("keywords", callback_data='keywords')],
                 [InlineKeyboardButton("cancel", callback_data='cancel')]]
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_choose_option",
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_CHOSE_OPTION,
                                    reply_markup=InlineKeyboardMarkup(menu_opt))
     return EDIT_CHOSEN_OPTION
 
@@ -65,27 +65,27 @@ async def on_chosen_edit_option(update: Update, context: ContextTypes.DEFAULT_TY
     if update.callback_query.data == 'title':
         await update.callback_query.edit_message_text("title")
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="edit_send_title")
+                                       text=EDIT_SEND_TITILE)
         return EDIT_TITLE
     elif update.callback_query.data == 'desc':
         await update.callback_query.edit_message_text("description")
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="edit_send_desc")
+                                       text=EDIT_SEND_DESCCRP)
         return EDIT_DESC
     elif update.callback_query.data == 'keywords':
         await update.callback_query.edit_message_text("keywords")
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="edit_send_keywords")
+                                       text=EDIT_SEND_KWORDS)
         return EDIT_KEYWORDS
     elif update.callback_query.data == 'video':
         await update.callback_query.edit_message_text("video")
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_send_video")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_SEND_VIDEO)
         return EDIT_VIDEO
     elif update.callback_query.data == 'cancel':
         await update.callback_query.edit_message_text("cancel")
         return ConversationHandler.END
     else:
-        await update.callback_query.edit_message_text(chat_id=update.effective_chat.id, text="unknown_command")
+        await update.callback_query.edit_message_text(chat_id=update.effective_chat.id, text=UNKNOWN_COMMAND)
         return ConversationHandler.END
 
 
@@ -98,18 +98,17 @@ async def edit_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             orm.session.commit()
 
             utils.videos_info.update_model()
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_title_ok")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_TITILE_OK)
         except Exception:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="error")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
 
         return ConversationHandler.END
     else:
         if not update['message']['text']:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_need_title")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_NEED_TITILE)
         else:
             await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="error_title_length".format(len(update['message']['text']),
-                                                                               MAX_TITLE_LENGTH))
+                                           text=MAX_TITLE_LENGTH_ERROR)
         return EDIT_TITLE
 
 
@@ -126,25 +125,24 @@ async def edit_desc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 await context.bot.edit_message_caption(
                     chat_id=context.user_data['channel_message'].chat_id,
                     message_id=context.user_data['channel_message'].msg_id,
-                    caption="channel_info_caption".format(context.user_data['video'].id,
+                    caption=CHANEL_INFO_CAPTION.format(context.user_data['video'].id,
                                                              html.escape(context.user_data['user'].user_name or
                                                                          context.user_data['user'].last_name),
                                                              html.escape(context.user_data['video'].description),
                                                              html.escape(context.user_data['video'].keywords)),
                     parse_mode="HTML")
 
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_desc_ok")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_DESC_OK)
         except Exception:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="error")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
         return ConversationHandler.END
 
     else:
         if not update['message']['text']:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_need_desc")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_NEED_DESC)
         else:
             await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="error_desc_length").format(len(update['message']['text']),
-                                                                              MAX_DESCRP_LENGTH)
+                                           text=MAX_DESCRP_LENGTH_ERROR)
         return EDIT_DESC
 
 
@@ -161,41 +159,32 @@ async def edit_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                 await context.bot.edit_message_caption(
                     chat_id=context.user_data['channel_message'].chat_id,
                     message_id=context.user_data['channel_message'].msg_id,
-                    caption="channel_info_caption".format(context.user_data['video'].id,
+                    caption=CHANEL_INFO_CAPTION.format(context.user_data['video'].id,
                                                              html.escape(context.user_data['user'].user_name or
                                                                          context.user_data['user'].last_name),
                                                              html.escape(context.user_data['video'].description),
                                                              html.escape(context.user_data['video'].keywords)),
                     parse_mode="HTML")
 
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_keywords_ok")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_KWORDS_OK)
         except Exception:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="error")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
         return ConversationHandler.END
 
     else:
         if not update['message']['text']:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_need_keywords")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_NEED_KWORDS)
         else:
             await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="error_keywords_length").format(len(update['message']['text']),
-                                                                                  MAX_KWORDS_LENGTH)
+                                           text=MAX_KWORDS_LENGTH_ERROR)
         return EDIT_KEYWORDS
 
 
 async def edit_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update['message']['video']:
         if update['message']['video']['duration'] > MAX_VIDEO_LENGTH:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="error_video_length").format(update['message']['video']['duration'],
-                                                   MAX_VIDEO_LENGTH)
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=MAX_VIDEO_LENGTH_ERROR)
             return EDIT_VIDEO
-        # elif update['message']['video']['mime_type'] in INVALID_MIME_TYPES:
-        #     await context.bot.send_message(
-        #         chat_id=update.effective_chat.id,
-        #         text="error_video_type").format(update['message']['video']['mime_type'])
-        #     return EDIT_VIDEO
         else:
             try:
                 context.user_data['video'].file_id = update['message']['video']['file_id']
@@ -213,7 +202,7 @@ async def edit_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         message_id=context.user_data['channel_message'].msg_id,
                         media=InputMediaVideo(
                             update['message']['video']['file_id'],
-                            caption="channel_info_caption").format(context.user_data['video'].id,
+                            caption=CHANEL_INFO_CAPTION).format(context.user_data['video'].id,
                                                                      html.escape(context.user_data['user'].user_name or
                                                                                  context.user_data['user'].last_name),
                                                                      html.escape(
@@ -221,14 +210,14 @@ async def edit_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                                                                      html.escape(context.user_data['video'].keywords)),
                             parse_mode="HTML")
 
-                await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_video_ok")
+                await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_VIDEO_OK)
             except Exception:
-                await context.bot.send_message(chat_id=update.effective_chat.id, text="error")
+                await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
 
             return ConversationHandler.END
     else:
         if not update['message']['video']:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="edit_need_video")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_NEED_VIDEO)
         return EDIT_VIDEO
 
 
