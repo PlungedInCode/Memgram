@@ -125,7 +125,7 @@ async def edit_desc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 await context.bot.edit_message_caption(
                     chat_id=context.user_data['channel_message'].chat_id,
                     message_id=context.user_data['channel_message'].msg_id,
-                    caption=CHANEL_INFO_CAPTION.format(context.user_data['video'].id,
+                    caption=VIDEO_INFO_CAPTION.format(context.user_data['video'].id,
                                                              html.escape(context.user_data['user'].user_name or
                                                                          context.user_data['user'].last_name),
                                                              html.escape(context.user_data['video'].description),
@@ -133,7 +133,7 @@ async def edit_desc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                     parse_mode="HTML")
 
             await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_DESC_OK)
-        except Exception:
+        except Exception as e:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
         return ConversationHandler.END
 
@@ -159,7 +159,7 @@ async def edit_keywords(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                 await context.bot.edit_message_caption(
                     chat_id=context.user_data['channel_message'].chat_id,
                     message_id=context.user_data['channel_message'].msg_id,
-                    caption=CHANEL_INFO_CAPTION.format(context.user_data['video'].id,
+                    caption=VIDEO_INFO_CAPTION.format(context.user_data['video'].id,
                                                              html.escape(context.user_data['user'].user_name or
                                                                          context.user_data['user'].last_name),
                                                              html.escape(context.user_data['video'].description),
@@ -192,26 +192,33 @@ async def edit_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 context.user_data['video'].width = update['message']['video']['width']
                 context.user_data['video'].height = update['message']['video']['height']
                 context.user_data['video'].duration = update['message']['video']['duration']
+
                 orm.session.add(context.user_data['video'])
                 orm.session.commit()
                 utils.videos_info.update_model()
 
+                ch_id = context.user_data['channel_message'].chat_id
+                msg_id = context.user_data['channel_message'].msg_id
+                video_id = update['message']['video']['file_id']
                 if context.user_data['channel_message'].msg_id:
                     await context.bot.edit_message_media(
-                        chat_id=context.user_data['channel_message'].chat_id,
-                        message_id=context.user_data['channel_message'].msg_id,
+                        chat_id=ch_id,
+                        message_id=msg_id,
                         media=InputMediaVideo(
-                            update['message']['video']['file_id'],
-                            caption=CHANEL_INFO_CAPTION).format(context.user_data['video'].id,
+                            video_id,
+                            caption=VIDEO_INFO_CAPTION.format(context.user_data['video'].id,
                                                                      html.escape(context.user_data['user'].user_name or
                                                                                  context.user_data['user'].last_name),
                                                                      html.escape(
                                                                          context.user_data['video'].description),
                                                                      html.escape(context.user_data['video'].keywords)),
-                            parse_mode="HTML")
+                            parse_mode="HTML"))
 
                 await context.bot.send_message(chat_id=update.effective_chat.id, text=EDIT_VIDEO_OK)
-            except Exception:
+            except Exception as e:
+                for i in context.user_data:
+                    print(i)
+                print(f"ERROR - {e}")
                 await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
 
             return ConversationHandler.END

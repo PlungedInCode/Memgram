@@ -63,7 +63,10 @@ EDIT_NEED_DESC="edit_need_desc"
 EDIT_KWORDS_OK="edit_keywords_ok"
 EDIT_NEED_KWORDS="edit_need_keywords"
 
-EDIT_VIDEO_OK="edit_keywords_ok"
-EDIT_NEED_VIDEO="edit_need_keywords"
+EDIT_VIDEO_OK="edit_vide_ok"
+EDIT_NEED_VIDEO="edit_need_video"
 
 CHANEL_INFO_CAPTION="channel_info_caption{}{}{}{}{USERNAME,LAST_NAME,DESCRP,KWORDS}"
+
+# Search handlers
+

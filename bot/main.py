@@ -18,12 +18,9 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
-
-
 
 def main() -> None:
     try:
@@ -42,7 +39,6 @@ def main() -> None:
     application.add_handler(upload_conv_handler)
     application.add_handler(edit_conv_handler)
     application.add_handler(delete_conv_handler)  
-
 
     # Search & send video
     application.add_handler(InlineQueryHandler(search_handlers.inline_search))

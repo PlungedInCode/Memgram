@@ -4,15 +4,14 @@ import utils.orm as orm
 from telegram import InlineQueryResultCachedVideo, Update
 from telegram.ext import ContextTypes
 from utils import utils
+from data.consts import *
 from data.messages_en import *
 
 
-async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def inline_search(update : Update, context : ContextTypes.DEFAULT_TYPE):
     query = update.inline_query.query
     inline_results = []
 
-    # if update.effective_user.username in settings['admin_usernames'] or not settings['closed_circle'] or \
-            # update.effective_user.username in settings['closed_circle']:
     if query:
         # Search requested videos
         result = utils.get_similar_videos(
@@ -24,21 +23,21 @@ async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         # Obtain random videos
         n_videos = len(utils.videos_info.videos_info_list)
-        result = random.sample(range(n_videos), min(INLINE_LIMIT, n_videos))
+        result = random.sample(range(n_videos), min(EMPTY_QUERY_VIDEOS, n_videos))
 
-        for idx in result:
-            if len(inline_results) >= RESULTS_LIMIT:
-                break
-            inline_results.append(
-                InlineQueryResultCachedVideo(id=utils.videos_info.videos_info_list[idx].id,
-                                             video_file_id=utils.videos_info.videos_info_list[idx].file_id,
-                                             title=utils.videos_info.videos_info_list[idx].title,
-                                             description=utils.videos_info.videos_info_list[idx].description))
+    for idx in result:
+        if len(inline_results) >= RESULTS_LIMIT:
+            break
+        inline_results.append(
+            InlineQueryResultCachedVideo(id=utils.videos_info.videos_info_list[idx].id,
+                                            video_file_id=utils.videos_info.videos_info_list[idx].file_id,
+                                            title=utils.videos_info.videos_info_list[idx].title,
+                                            description=utils.videos_info.videos_info_list[idx].description))
 
-        await context.bot.answer_inline_query(update.inline_query.id, inline_results)
+    await context.bot.answer_inline_query(update.inline_query.id, inline_results)
 
 
-async def on_chosen_video(update, context):
+async def on_chosen_video(update : Update, _ : ContextTypes.DEFAULT_TYPE):
     user = orm.Users(
         user_id=update.effective_user.id,
         user_name=update.effective_user.username,

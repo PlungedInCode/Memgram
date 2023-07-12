@@ -67,8 +67,7 @@ async def on_chosen_delete_option(update: Update, context: ContextTypes.DEFAULT_
 
             orm.session.commit()
             await update.callback_query.edit_message_caption(DELETED)
-        except Exception as e:
-            print(e)
+        except Exception:
             await update.callback_query.edit_message_caption(ERROR_OCCURED)
 
     elif update.callback_query.data == 'no':

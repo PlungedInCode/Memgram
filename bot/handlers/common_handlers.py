@@ -67,7 +67,7 @@ async def get_random_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await context.bot.send_message(chat_id=update.effective_chat.id, text=ERROR_OCCURED)
 
 
-async def get_db(update, context) -> None:
+async def get_db(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if utils.is_admin(update.effective_user.username):
         with open(DB_PATH, 'rb') as db_file:
             await context.bot.sendDocument(chat_id=update.effective_chat.id, document=db_file)
