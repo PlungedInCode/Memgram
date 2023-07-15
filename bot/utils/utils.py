@@ -19,6 +19,12 @@ def load_admins_from_json(filename):
 def is_admin(username):
     return username in load_admins_from_json(ADMINS_PATH)
 
+def record_admin(username):
+    if not is_admin(username):
+        with open(ADMINS_PATH, 'w') as file:
+            json.dump(username, file)
+
+
 def cleaner(query):
     document_test = query.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u') \
         .replace('ñ', 'n').replace('ü', 'u').replace('1', 'one').replace('2', 'two').replace('3', 'three'). \

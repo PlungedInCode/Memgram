@@ -32,7 +32,10 @@ def main() -> None:
     # Common handlers
     application.add_handler(CommandHandler("start", common_handlers.start))
     application.add_handler(CommandHandler("random", common_handlers.get_random_video))
+
+    # Admin handlers
     application.add_handler(CommandHandler("get_db", common_handlers.get_db))
+    application.add_handler(CommandHandler("add_admin", common_handlers.add_admin))
 
     # Conv handlers
     application.add_handler(upload_conv_handler)

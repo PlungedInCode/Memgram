@@ -65,7 +65,7 @@ async def on_chosen_edit_option(update: Update, context: ContextTypes.DEFAULT_TY
     if update.callback_query.data == 'title':
         await update.callback_query.edit_message_text("title")
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text=EDIT_SEND_TITILE)
+                                       text=EDIT_SEND_TITLE)
         return EDIT_TITLE
     elif update.callback_query.data == 'desc':
         await update.callback_query.edit_message_text("description")

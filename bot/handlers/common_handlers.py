@@ -71,3 +71,18 @@ async def get_db(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if utils.is_admin(update.effective_user.username):
         with open(DB_PATH, 'rb') as db_file:
             await context.bot.sendDocument(chat_id=update.effective_chat.id, document=db_file)
+
+
+async def add_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if utils.is_admin(update.effective_user.username):
+        # try:
+        #     await context.bot.get_chat(update.effective_user.username)
+        # except Exception as e:
+        #     print(e)
+        #     await context.bot.send_message(chat_id=update.effective_chat.id, text=USERNAME_NOT_FOUND)
+        #     return
+        
+        utils.record_admin(update.effective_user.username)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=ADMIN_ADDED)
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=ACCESS_ERROR)
